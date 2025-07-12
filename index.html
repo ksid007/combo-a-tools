@@ -1,19 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Free PDF & Image Tools</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .home {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 50px 20px;
+    }
+    .home h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    .home p {
+      font-size: 15px;
+      color: gray;
+      margin-bottom: 30px;
+    }
+    .tool-links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .tool-links a {
+      padding: 12px 20px;
+      background-color: var(--button);
+      color: white;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+    .tool-links a:hover {
+      background-color: var(--button-hover);
+    }
+    .toggle {
+      margin-top: 30px;
+    }
+  </style>
 </head>
 <body>
-  <h1>🧰 Free PDF & Image Tools</h1>
-  <p style="font-size: 12px; color: gray;">🔒 We don’t store any data. All processing happens in your browser. Safe & private.</p>
-  <div class="tools">
-    <a href="resize.html">Image Resizer</a>
-    <a href="convert.html">JPG ⇄ PNG Converter</a>
-    <a href="merge-pdf.html">Merge PDF</a>
-    <a href="pdf-to-jpg.html">PDF to JPG</a>
+
+  <div class="container home">
+    <h1>🧰 Free PDF & Image Tools <span style="font-size: 18px;">🔒</span></h1>
+    <p>We don’t store any data. All processing happens in your browser. Safe & private.</p>
+
+    <div class="tool-links">
+      <a href="Image Resizer.html">📏 Image Resizer</a>
+      <a href="Convert.html">🔄 JPG ⇌ PNG Converter</a>
+      <a href="Merge-pdf.html">🧾 Merge PDF</a>
+      <a href="Pdf-to-jpg.html">🖼️ PDF to JPG</a>
+    </div>
+
+    <div class="toggle" onclick="toggleTheme()">🌓 Toggle Dark Mode</div>
   </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    }
+
+    (function () {
+      const saved = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+  </script>
+
 </body>
 </html>
