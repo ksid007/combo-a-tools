@@ -1,12 +1,185 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="light">
 <head>
-  <title>Pdf-to-jpg</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDF to JPG Converter</title>
+  <script src="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --text: #111;
+      --card: #fff;
+      --accent: #007bff;
+    }
+
+    html[data-theme='dark'] {
+      --bg: #1e1e1e;
+      --text: #f1f1f1;
+      --card: #2b2b2b;
+      --accent: #4da6ff;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--accent);
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .download-btn {
+      margin-top: 10px;
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      text-align: center;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .toggle-btn {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .toggle-btn button {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    #downloadZip {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Pdf-to-jpg Tool</h1>
-  <p>Feature coming soon!</p>
-  <a href="index.html">← Back</a>
+  <h1>📄 Convert PDF to JPG</h1>
+
+  <div class="drop-zone" onclick="fileInput.click()" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+    Drag & drop your PDF here or click to upload
+  </div>
+  <input type="file" id="fileInput" accept="application/pdf" style="display:none" onchange="handleFile(this.files[0])">
+
+  <div class="preview" id="preview"></div>
+
+  <div id="downloadZip">
+    <button class="download-btn" onclick="downloadAll()">⬇️ Download All as ZIP</button>
+  </div>
+
+  <div class="toggle-btn">
+    <button onclick="toggleTheme()">🌓 Toggle Dark Mode</button>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const zipDownloadBtn = document.getElementById('downloadZip');
+    const imageList = [];
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute("data-theme");
+      const next = current === "light" ? "dark" : "light";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    }
+
+    (function () {
+      const saved = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+
+    function handleDrop(event) {
+      event.preventDefault();
+      const file = event.dataTransfer.files[0];
+      if (file && file.type === 'application/pdf') {
+        handleFile(file);
+      }
+    }
+
+    async function handleFile(file) {
+      if (!file) return;
+      preview.innerHTML = '';
+      imageList.length = 0;
+      zipDownloadBtn.style.display = 'none';
+
+      const reader = new FileReader();
+      reader.onload = async function () {
+        const typedarray = new Uint8Array(this.result);
+        const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 2 });
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+
+          await page.render({ canvasContext: ctx, viewport }).promise;
+
+          // Show canvas preview
+          preview.appendChild(canvas);
+
+          // Save as Blob for ZIP
+          const dataURL = canvas.toDataURL("image/jpeg", 1.0);
+          const blob = await (await fetch(dataURL)).blob();
+          imageList.push({ name: `page-${i}.jpg`, blob });
+        }
+
+        zipDownloadBtn.style.display = 'block';
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    async function downloadAll() {
+      const zip = new JSZip();
+      imageList.forEach(item => {
+        zip.file(item.name, item.blob);
+      });
+
+      const content = await zip.generateAsync({ type: "blob" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(content);
+      a.download = "pdf-pages.zip";
+      a.click();
+    }
+  </script>
 </body>
 </html>
