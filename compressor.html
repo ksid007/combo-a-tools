@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Image Compressor</title>
+  <title>Image Compressor (JPG + PNG)</title>
   <style>
     :root {
       --bg: #f5f5f5;
@@ -95,51 +95,3 @@
 
   <script>
     function toggleTheme() {
-      const html = document.documentElement;
-      const current = html.getAttribute("data-theme");
-      const next = current === "light" ? "dark" : "light";
-      html.setAttribute("data-theme", next);
-      localStorage.setItem("theme", next);
-    }
-
-    (function () {
-      const saved = localStorage.getItem("theme") || "light";
-      document.documentElement.setAttribute("data-theme", saved);
-    })();
-
-    async function compressImage() {
-      const file = document.getElementById("imgInput").files[0];
-      const targetKB = parseFloat(document.getElementById("targetSize").value);
-      if (!file || !targetKB) {
-        alert("Please upload image and enter target size.");
-        return;
-      }
-
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
-      img.onload = () => {
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-
-        let quality = 0.9;
-        let output = canvas.toDataURL("image/jpeg", quality);
-
-        const targetBytes = targetKB * 1024;
-
-        while (output.length > targetBytes && quality > 0.05) {
-          quality -= 0.05;
-          output = canvas.toDataURL("image/jpeg", quality);
-        }
-
-        const a = document.createElement("a");
-        a.href = output;
-        a.download = "compressed.jpg";
-        a.click();
-      };
-    }
-  </script>
-</body>
-</html>
