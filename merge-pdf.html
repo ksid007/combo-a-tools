@@ -1,128 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <link rel="stylesheet" href="style.css">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Merge PDF Files</title>
-  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f6f8;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .container {
-      background: white;
-      padding: 30px 40px;
-      border-radius: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .drop-zone {
+      border: 2px dashed #aaa;
+      padding: 20px;
+      border-radius: 10px;
       text-align: center;
-      width: 90%;
-      max-width: 500px;
-    }
-    h1 {
-      color: #333;
-      margin-bottom: 20px;
-    }
-    input[type="file"] {
-      width: 100%;
-      margin-bottom: 10px;
-    }
-    ul {
-      text-align: left;
-      font-size: 15px;
-      padding-left: 20px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-      color: #444;
-    }
-    li {
-      margin: 4px 0;
-    }
-    button {
-      background-color: #0077ff;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-size: 16px;
       cursor: pointer;
-      width: 100%;
+      margin-bottom: 20px;
+      transition: 0.3s ease;
     }
-    button:hover {
-      background-color: #005fd6;
+    .drop-zone.dragover {
+      background-color: rgba(0, 0, 0, 0.05);
     }
-    a {
-      margin-top: 15px;
-      display: block;
-      color: #0077ff;
+    .file-preview {
+      margin: 5px 0;
       font-size: 14px;
-      text-decoration: none;
     }
-    #downloadLink {
-      display: none;
-      margin-top: 15px;
-      font-weight: bold;
-      color: green;
-    }
+  </style>
 </head>
 <body>
-
   <div class="container">
-    <h1>🧾 Merge PDF Files</h1>
-    <input type="file" id="pdfs" multiple accept="application/pdf" />
-    <ul id="fileList"></ul>
-    <button onclick="mergePDFs()">Merge Now</button>
-    <a id="downloadLink" download="merged.pdf">Download Merged PDF</a>
+    <h1>📚 Merge PDF Files</h1>
+
+    <div class="drop-zone" id="dropZone">
+      Drag & Drop 2–5 PDF files here<br>or click to select
+      <input type="file" accept="application/pdf" multiple id="pdfInput" style="display: none;" />
+    </div>
+
+    <div id="fileList"></div>
+    <button onclick="mergePDFs()">Merge PDFs</button>
+    <a id="downloadLink" style="display:none; margin-top: 15px;" download="merged.pdf">📥 Download Merged PDF</a>
+
     <a href="index.html">← Back to Home</a>
+    <div class="toggle" onclick="toggleTheme()">🌓 Toggle Dark Mode</div>
   </div>
 
+  <!-- PDFLib -->
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <script>
-    const fileInput = document.getElementById("pdfs");
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("pdfInput");
     const fileList = document.getElementById("fileList");
 
-    fileInput.addEventListener("change", () => {
-      fileList.innerHTML = "";
-      const files = fileInput.files;
-      if (files.length > 0) {
-        for (let file of files) {
-          const li = document.createElement("li");
-          li.textContent = "📄 " + file.name;
-          fileList.appendChild(li);
-        }
-      }
+    let pdfFiles = [];
+
+    dropZone.addEventListener("click", () => fileInput.click());
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
     });
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("dragover");
+    });
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener("change", () => handleFiles(fileInput.files));
+
+    function handleFiles(files) {
+      pdfFiles = [];
+      fileList.innerHTML = "";
+
+      const list = [...files].filter(f => f.type === "application/pdf");
+      if (list.length < 2 || list.length > 5) {
+        alert("Please select 2 to 5 PDF files.");
+        return;
+      }
+
+      list.forEach(file => {
+        pdfFiles.push(file);
+        const div = document.createElement("div");
+        div.className = "file-preview";
+        div.textContent = "📄 " + file.name;
+        fileList.appendChild(div);
+      });
+    }
 
     async function mergePDFs() {
-      const files = fileInput.files;
-      if (files.length < 2) {
+      if (pdfFiles.length < 2) {
         alert("Please select at least 2 PDF files.");
         return;
       }
 
       const mergedPdf = await PDFLib.PDFDocument.create();
 
-      for (let file of files) {
+      for (const file of pdfFiles) {
         const bytes = await file.arrayBuffer();
         const pdf = await PDFLib.PDFDocument.load(bytes);
         const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-        copiedPages.forEach((page) => mergedPdf.addPage(page));
+        copiedPages.forEach(page => mergedPdf.addPage(page));
       }
 
       const mergedBytes = await mergedPdf.save();
-      const blob = new Blob([mergedBytes], { type: 'application/pdf' });
+      const blob = new Blob([mergedBytes], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
 
-      const downloadLink = document.getElementById("downloadLink");
-      downloadLink.href = url;
-      downloadLink.style.display = "block";
+      const link = document.getElementById("downloadLink");
+      link.href = url;
+      link.style.display = "inline-block";
     }
-  </script>
 
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    }
+
+    (function () {
+      const saved = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+  </script>
 </body>
 </html>
