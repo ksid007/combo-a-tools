@@ -1,132 +1,123 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <link rel="stylesheet" href="style.css">
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Image Resizer</title>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f6f8;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .container {
-      background: white;
-      padding: 30px 40px;
-      border-radius: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      width: 90%;
-      max-width: 450px;
-    }
-    h1 {
-      margin-bottom: 20px;
-      color: #333;
-    }
-    input, select {
-      padding: 10px;
-      width: 100%;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-    }
-    button {
-      background-color: #0077ff;
-      color: white;
-      border: none;
-      padding: 12px 20px;
+  <link rel="stylesheet" href="style.css">
+  <style>
+    #preview {
       margin-top: 15px;
-      border-radius: 12px;
-      font-size: 16px;
-      cursor: pointer;
-      width: 100%;
-    }
-    button:hover {
-      background-color: #005fd6;
-    }
-    a {
-      margin-top: 15px;
-      display: block;
-      color: #0077ff;
-      font-size: 14px;
-      text-decoration: none;
-    }
-    #canvas {
-      display: none;
-      margin-top: 20px;
       max-width: 100%;
+      max-height: 200px;
       border-radius: 10px;
+      border: 1px solid #ccc;
     }
-    #download {
-      display: none;
-      margin-top: 15px;
-      color: green;
-      font-weight: bold;
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
     }
+    .input-group input,
+    .input-group select {
+      flex: 1;
+    }
+  </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>📐 Image Resizer</h1>
-
-    <input type="file" id="upload" accept="image/*">
-
-    <input type="number" id="width" placeholder="Width">
-    <input type="number" id="height" placeholder="Height">
-
-    <select id="unit">
-      <option value="px">Pixels (px)</option>
-      <option value="cm">Centimeters (cm)</option>
-    </select>
+    <h1>📏 Image Resizer</h1>
+    <input type="file" accept="image/*" id="upload" />
     
-    <button onclick="resizeImage()">Resize</button>
-    <a id="download" download="resized-image.png">Download Resized Image</a>
-    <a href="index.html">← Back to Home</a>
+    <div id="filename" style="margin-top: 10px; font-size: 14px; color: gray;"></div>
+    
+    <img id="preview" style="display: none;" />
 
-    <canvas id="canvas"></canvas>
+    <div class="input-group">
+      <input type="number" id="width" placeholder="Width" />
+      <input type="number" id="height" placeholder="Height" />
+      <select id="unit">
+        <option value="px">Pixels (px)</option>
+        <option value="cm">Centimeters (cm)</option>
+      </select>
+    </div>
+
+    <button onclick="resizeImage()">Resize Image</button>
+    <a id="downloadLink" style="display: none;" download="resized.png">📥 Download Resized Image</a>
+    <a href="index.html">← Back to Home</a>
+    <div class="toggle" onclick="toggleTheme()">🌓 Toggle Dark Mode</div>
   </div>
 
   <script>
-    function resizeImage() {
-      const file = document.getElementById("upload").files[0];
-      let width = parseFloat(document.getElementById("width").value);
-      let height = parseFloat(document.getElementById("height").value);
-      const unit = document.getElementById("unit").value;
+    const upload = document.getElementById("upload");
+    const preview = document.getElementById("preview");
+    const filenameDisplay = document.getElementById("filename");
 
-      if (!file || !width || !height) {
-        alert("Please select a file and enter both width & height.");
+    let originalImage = null;
+
+    upload.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      filenameDisplay.textContent = "🖼️ " + file.name;
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        preview.src = event.target.result;
+        preview.style.display = "block";
+        originalImage = new Image();
+        originalImage.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function resizeImage() {
+      if (!originalImage) {
+        alert("Please upload an image first.");
         return;
       }
 
-      // Convert cm to px
-      if (unit === "cm") {
-        const cmToPx = 37.8; // approx screen resolution (96dpi)
-        width = width * cmToPx;
-        height = height * cmToPx;
+      const width = parseFloat(document.getElementById("width").value);
+      const height = parseFloat(document.getElementById("height").value);
+      const unit = document.getElementById("unit").value;
+
+      if (!width || !height) {
+        alert("Please enter both width and height.");
+        return;
       }
 
-      const canvas = document.getElementById("canvas");
+      const dpi = 96; // common screen DPI
+      const scaleFactor = unit === "cm" ? dpi / 2.54 : 1;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(width * scaleFactor);
+      canvas.height = Math.round(height * scaleFactor);
+
       const ctx = canvas.getContext("2d");
+      ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
 
-      const img = new Image();
-      img.onload = function () {
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
-        canvas.style.display = "block";
-
-        const downloadLink = document.getElementById("download");
-        downloadLink.href = canvas.toDataURL("image/png");
-        downloadLink.style.display = "inline";
-      };
-      img.src = URL.createObjectURL(file);
+      canvas.toBlob(function (blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.getElementById("downloadLink");
+        link.href = url;
+        link.style.display = "block";
+      }, "image/png");
     }
+
+    // Dark Mode Script
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    }
+
+    // Load saved theme
+    (function () {
+      const saved = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
   </script>
 
 </body>
