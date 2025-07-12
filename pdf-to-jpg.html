@@ -1,185 +1,142 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PDF to JPG Converter</title>
-  <script src="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <style>
-    :root {
-      --bg: #f5f5f5;
-      --text: #111;
-      --card: #fff;
-      --accent: #007bff;
-    }
-
-    html[data-theme='dark'] {
-      --bg: #1e1e1e;
-      --text: #f1f1f1;
-      --card: #2b2b2b;
-      --accent: #4da6ff;
-    }
-
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    h1 {
-      text-align: center;
-    }
-
-    .drop-zone {
-      border: 2px dashed var(--accent);
-      border-radius: 12px;
-      padding: 30px;
-      text-align: center;
-      cursor: pointer;
-      margin-bottom: 20px;
-    }
-
-    .preview {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-    }
-
-    canvas {
-      width: 100%;
-      height: auto;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    .download-btn {
-      margin-top: 10px;
-      display: inline-block;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 6px;
-      text-align: center;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .toggle-btn {
-      text-align: center;
-      margin-top: 15px;
-    }
-
-    .toggle-btn button {
-      background: none;
-      border: none;
-      color: var(--accent);
-      cursor: pointer;
-    }
-
-    #downloadZip {
-      display: none;
-      text-align: center;
-      margin-top: 20px;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDF to JPG</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
-  <h1>📄 Convert PDF to JPG</h1>
-
-  <div class="drop-zone" onclick="fileInput.click()" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
-    Drag & drop your PDF here or click to upload
-  </div>
-  <input type="file" id="fileInput" accept="application/pdf" style="display:none" onchange="handleFile(this.files[0])">
-
-  <div class="preview" id="preview"></div>
-
-  <div id="downloadZip">
-    <button class="download-btn" onclick="downloadAll()">⬇️ Download All as ZIP</button>
-  </div>
-
-  <div class="toggle-btn">
-    <button onclick="toggleTheme()">🌓 Toggle Dark Mode</button>
+  <div class="container">
+    <h1><span>📄</span> Convert PDF to JPG</h1>
+    <div class="drop-zone" id="drop-zone">
+      <p>Drag & drop your PDF here or click to upload</p>
+      <input type="file" id="pdf-upload" accept="application/pdf" hidden/>
+    </div>
+    <div id="preview" class="preview-grid"></div>
+    <button id="downloadAllBtn" style="display:none;">⬇️ Download All as ZIP</button>
   </div>
 
   <script>
-    const fileInput = document.getElementById('fileInput');
-    const preview = document.getElementById('preview');
-    const zipDownloadBtn = document.getElementById('downloadZip');
-    const imageList = [];
+    const dropZone = document.getElementById("drop-zone");
+    const fileInput = document.getElementById("pdf-upload");
+    const preview = document.getElementById("preview");
+    const downloadAllBtn = document.getElementById("downloadAllBtn");
 
-    function toggleTheme() {
-      const html = document.documentElement;
-      const current = html.getAttribute("data-theme");
-      const next = current === "light" ? "dark" : "light";
-      html.setAttribute("data-theme", next);
-      localStorage.setItem("theme", next);
-    }
+    dropZone.addEventListener("click", () => fileInput.click());
+    dropZone.addEventListener("dragover", e => {
+      e.preventDefault();
+      dropZone.classList.add("drag-over");
+    });
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("drag-over");
+    });
+    dropZone.addEventListener("drop", e => {
+      e.preventDefault();
+      dropZone.classList.remove("drag-over");
+      handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener("change", () => handleFiles(fileInput.files));
 
-    (function () {
-      const saved = localStorage.getItem("theme") || "light";
-      document.documentElement.setAttribute("data-theme", saved);
-    })();
+    async function handleFiles(files) {
+      const file = files[0];
+      if (!file || file.type !== "application/pdf") return;
 
-    function handleDrop(event) {
-      event.preventDefault();
-      const file = event.dataTransfer.files[0];
-      if (file && file.type === 'application/pdf') {
-        handleFile(file);
-      }
-    }
-
-    async function handleFile(file) {
-      if (!file) return;
-      preview.innerHTML = '';
-      imageList.length = 0;
-      zipDownloadBtn.style.display = 'none';
-
-      const reader = new FileReader();
-      reader.onload = async function () {
-        const typedarray = new Uint8Array(this.result);
-        const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
-
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const viewport = page.getViewport({ scale: 2 });
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-
-          await page.render({ canvasContext: ctx, viewport }).promise;
-
-          // Show canvas preview
-          preview.appendChild(canvas);
-
-          // Save as Blob for ZIP
-          const dataURL = canvas.toDataURL("image/jpeg", 1.0);
-          const blob = await (await fetch(dataURL)).blob();
-          imageList.push({ name: `page-${i}.jpg`, blob });
-        }
-
-        zipDownloadBtn.style.display = 'block';
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    async function downloadAll() {
+      preview.innerHTML = "";
+      const pdfData = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
       const zip = new JSZip();
-      imageList.forEach(item => {
-        zip.file(item.name, item.blob);
-      });
 
-      const content = await zip.generateAsync({ type: "blob" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(content);
-      a.download = "pdf-pages.zip";
-      a.click();
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const scale = 1.5;
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        const imgData = canvas.toDataURL("image/jpeg", 1.0);
+
+        // Small thumbnail preview
+        const thumb = document.createElement("img");
+        thumb.src = imgData;
+        thumb.alt = `Page ${pageNum}`;
+        thumb.className = "thumb-preview";
+        preview.appendChild(thumb);
+
+        // Add to ZIP
+        zip.file(`page-${pageNum}.jpg`, imgData.split(",")[1], { base64: true });
+      }
+
+      downloadAllBtn.style.display = "inline-block";
+      downloadAllBtn.onclick = () => {
+        zip.generateAsync({ type: "blob" }).then(content => {
+          saveAs(content, "converted-pages.zip");
+        });
+      };
     }
   </script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f9f9f9;
+      color: #222;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 30px 20px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    .drop-zone {
+      border: 2px dashed #007bff;
+      padding: 30px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      background: #fff;
+      transition: 0.2s ease;
+    }
+    .drop-zone.drag-over {
+      background-color: #e0f0ff;
+    }
+    .preview-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .thumb-preview {
+      width: 140px;
+      height: auto;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      font-weight: bold;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </body>
 </html>
