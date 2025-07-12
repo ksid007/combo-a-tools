@@ -89,9 +89,9 @@
         alert("Please enter both width and height.");
         return;
       }
-
-      const dpi = 96; // common screen DPI
-      const scaleFactor = unit === "cm" ? dpi / 2.54 : 1;
+        let scaleFactor = 1;
+        if (unit === "cm") scaleFactor = dpi / 2.54;
+        else if (unit === "inch") scaleFactor = dpi;
 
       const canvas = document.createElement("canvas");
       canvas.width = Math.round(width * scaleFactor);
