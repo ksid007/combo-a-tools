@@ -1,12 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Convert</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JPG ⇄ PNG Converter</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Converter Tool</h1>
-  <p>Feature coming soon!</p>
+  <h1>🖼️ JPG ⇄ PNG Converter</h1>
+
+  <input type="file" id="fileInput" accept="image/png, image/jpeg"><br><br>
+  <button onclick="convertImage()">Convert</button><br><br>
+  
+  <canvas id="canvas" style="display:none;"></canvas>
+  <a id="downloadLink" style="display:none;" download>Download Converted Image</a><br><br>
+
   <a href="index.html">← Back</a>
+
+  <script>
+    function convertImage() {
+      const file = document.getElementById("fileInput").files[0];
+      if (!file) return alert("Please upload a file.");
+
+      const img = new Image();
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      img.onload = function() {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        const isPng = file.name.toLowerCase().endsWith('.png');
+        const format = isPng ? "image/jpeg" : "image/png";
+        const newExt = isPng ? "jpg" : "png";
+
+        const dataURL = canvas.toDataURL(format);
+        const downloadLink = document.getElementById("downloadLink");
+        downloadLink.href = dataURL;
+        downloadLink.download = "converted." + newExt;
+        downloadLink.style.display = "inline";
+      };
+      img.src = URL.createObjectURL(file);
+    }
+  </script>
 </body>
 </html>
