@@ -2,120 +2,138 @@
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
+  <title>Merge PDF – Combo A Tools</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Merge PDF Files</title>
-  <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <style>
-    .drop-zone {
-      border: 2px dashed #aaa;
+    :root {
+      --bg: #f4f4f4;
+      --text: #000;
+      --card: #fff;
+    }
+
+    html[data-theme='dark'] {
+      --bg: #121212;
+      --text: #fff;
+      --card: #1e1e1e;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
       padding: 20px;
-      border-radius: 10px;
-      text-align: center;
-      cursor: pointer;
-      margin-bottom: 20px;
-      transition: 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
-    .drop-zone.dragover {
-      background-color: rgba(0, 0, 0, 0.05);
+
+    h2 {
+      margin-bottom: 10px;
     }
-    .file-preview {
-      margin: 5px 0;
+
+    .upload-box {
+      background: var(--card);
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    input[type="file"] {
+      margin: 10px 0;
+      width: 100%;
+    }
+
+    #file-list {
+      margin-top: 10px;
       font-size: 14px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      background: #007bff;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .btn:hover {
+      background: #0056b3;
+    }
+
+    .back {
+      margin-top: 20px;
+      display: inline-block;
+      font-size: 14px;
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .back:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📚 Merge PDF Files</h1>
+  <h2>📚 Merge PDF Files</h2>
+  <p>Select 1 to 5 PDF files to combine into one.</p>
 
-    <div class="drop-zone" id="dropZone">
-      Drag & Drop 2–5 PDF files here<br>or click to select
-      <input type="file" accept="application/pdf" multiple id="pdfInput" style="display: none;" />
-    </div>
-
-    <div id="fileList"></div>
-    <button onclick="mergePDFs()">Merge PDFs</button>
-    <a id="downloadLink" style="display:none; margin-top: 15px;" download="merged.pdf">📥 Download Merged PDF</a>
-
-    <a href="index.html">← Back to Home</a>
-    <div class="toggle" onclick="toggleTheme()">🌓 Toggle Dark Mode</div>
+  <div class="upload-box">
+    <input type="file" id="pdf-files" accept="application/pdf" multiple />
+    <div id="file-list"></div>
+    <button class="btn" onclick="mergePDFs()">Merge & Download</button>
   </div>
 
-  <!-- PDFLib -->
-  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <a href="index.html" class="back">← Back to Home</a>
+
   <script>
-    const dropZone = document.getElementById("dropZone");
-    const fileInput = document.getElementById("pdfInput");
-    const fileList = document.getElementById("fileList");
+    const input = document.getElementById('pdf-files');
+    const fileList = document.getElementById('file-list');
 
-    let pdfFiles = [];
-
-    dropZone.addEventListener("click", () => fileInput.click());
-    dropZone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      dropZone.classList.add("dragover");
-    });
-    dropZone.addEventListener("dragleave", () => {
-      dropZone.classList.remove("dragover");
-    });
-    dropZone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dropZone.classList.remove("dragover");
-      handleFiles(e.dataTransfer.files);
-    });
-    fileInput.addEventListener("change", () => handleFiles(fileInput.files));
-
-    function handleFiles(files) {
-      pdfFiles = [];
-      fileList.innerHTML = "";
-
-      const list = [...files].filter(f => f.type === "application/pdf");
-      if (list.length < 2 || list.length > 5) {
-        alert("Please select 2 to 5 PDF files.");
+    input.addEventListener('change', () => {
+      const files = input.files;
+      if (files.length < 1 || files.length > 5) {
+        fileList.innerHTML = `<span style="color:red;">Please select 1 to 5 PDF files.</span>`;
         return;
       }
-
-      list.forEach(file => {
-        pdfFiles.push(file);
-        const div = document.createElement("div");
-        div.className = "file-preview";
-        div.textContent = "📄 " + file.name;
-        fileList.appendChild(div);
-      });
-    }
+      fileList.innerHTML = "<strong>Selected files:</strong><ul>" +
+        Array.from(files).map(f => `<li>${f.name}</li>`).join('') + "</ul>";
+    });
 
     async function mergePDFs() {
-      if (pdfFiles.length < 2) {
-        alert("Please select at least 2 PDF files.");
+      const files = input.files;
+      if (files.length < 1 || files.length > 5) {
+        alert("Please select between 1 and 5 PDF files.");
         return;
       }
 
       const mergedPdf = await PDFLib.PDFDocument.create();
 
-      for (const file of pdfFiles) {
+      for (const file of files) {
         const bytes = await file.arrayBuffer();
         const pdf = await PDFLib.PDFDocument.load(bytes);
         const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-        copiedPages.forEach(page => mergedPdf.addPage(page));
+        copiedPages.forEach(p => mergedPdf.addPage(p));
       }
 
       const mergedBytes = await mergedPdf.save();
-      const blob = new Blob([mergedBytes], { type: "application/pdf" });
+      const blob = new Blob([mergedBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
-
-      const link = document.getElementById("downloadLink");
-      link.href = url;
-      link.style.display = "inline-block";
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'merged.pdf';
+      a.click();
     }
 
-    function toggleTheme() {
-      const html = document.documentElement;
-      const current = html.getAttribute("data-theme");
-      const next = current === "dark" ? "light" : "dark";
-      html.setAttribute("data-theme", next);
-      localStorage.setItem("theme", next);
-    }
-
+    // Auto-dark mode load
     (function () {
       const saved = localStorage.getItem("theme") || "light";
       document.documentElement.setAttribute("data-theme", saved);
