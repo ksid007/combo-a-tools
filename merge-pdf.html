@@ -1,12 +1,102 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Merge-Pdf</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Merge PDF Files</title>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 450px;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    input[type="file"] {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+    button {
+      background-color: #0077ff;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #005fd6;
+    }
+    a {
+      margin-top: 15px;
+      display: block;
+      color: #0077ff;
+      font-size: 14px;
+      text-decoration: none;
+    }
+    #downloadLink {
+      display: none;
+      margin-top: 15px;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
 </head>
 <body>
-  <h1>Merge-pdf Tool</h1>
-  <p>Feature coming soon!</p>
-  <a href="index.html">← Back</a>
+
+  <div class="container">
+    <h1>🧾 Merge PDF Files</h1>
+    <input type="file" id="pdfs" multiple accept="application/pdf" />
+    <button onclick="mergePDFs()">Merge Now</button>
+    <a id="downloadLink" download="merged.pdf">Download Merged PDF</a>
+    <a href="index.html">← Back to Home</a>
+  </div>
+
+  <script>
+    async function mergePDFs() {
+      const files = document.getElementById("pdfs").files;
+      if (files.length < 2) {
+        alert("Please select at least 2 PDF files.");
+        return;
+      }
+
+      const mergedPdf = await PDFLib.PDFDocument.create();
+
+      for (let file of files) {
+        const bytes = await file.arrayBuffer();
+        const pdf = await PDFLib.PDFDocument.load(bytes);
+        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+        copiedPages.forEach((page) => mergedPdf.addPage(page));
+      }
+
+      const mergedBytes = await mergedPdf.save();
+      const blob = new Blob([mergedBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+
+      const downloadLink = document.getElementById("downloadLink");
+      downloadLink.href = url;
+      downloadLink.style.display = "block";
+    }
+  </script>
+
 </body>
 </html>
