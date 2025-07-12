@@ -43,7 +43,7 @@
     .tool-card {
       background: var(--card);
       border: 1px solid #ddd;
-      padding: 15px;
+      padding: 20px 10px;
       text-align: center;
       border-radius: 10px;
       width: 100%;
@@ -52,6 +52,7 @@
       transition: transform 0.2s ease;
       text-decoration: none;
       color: inherit;
+      font-size: 16px;
     }
 
     .tool-card:hover {
@@ -59,9 +60,9 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
 
-    .tool-card img {
-      width: 48px;
-      height: 48px;
+    .tool-card .emoji {
+      font-size: 32px;
+      display: block;
       margin-bottom: 8px;
     }
 
@@ -91,34 +92,29 @@
   <h1>🧰 Combo A Tool</h1>
 
   <div class="tool-grid">
-    <!-- JPG ⇌ PNG Converter -->
     <a href="jpg-png-converter.html" class="tool-card">
-      <img src="https://img.icons8.com/color/48/image.png" alt="Converter Icon">
-      <div><strong>JPG ⇌ PNG</strong></div>
+      <span class="emoji">🖼️</span>
+      <strong>JPG ⇌ PNG</strong>
     </a>
 
-    <!-- Image Resizer -->
     <a href="image-resizer.html" class="tool-card">
-      <img src="https://img.icons8.com/color/48/resize.png" alt="Resize Icon">
-      <div><strong>Resize Image</strong></div>
+      <span class="emoji">📐</span>
+      <strong>Resize Image</strong>
     </a>
 
-    <!-- Image Compressor -->
     <a href="image-compressor.html" class="tool-card">
-      <img src="https://img.icons8.com/emoji/48/compression.png" alt="Compressor Icon">
-      <div><strong>Compressor</strong></div>
+      <span class="emoji">🗜️</span>
+      <strong>Compressor</strong>
     </a>
 
-    <!-- PDF to JPG -->
     <a href="pdf-to-jpg.html" class="tool-card">
-      <img src="https://img.icons8.com/fluency/48/pdf.png" alt="PDF to JPG Icon">
-      <div><strong>PDF ➜ JPG</strong></div>
+      <span class="emoji">📄➡️🖼️</span>
+      <strong>PDF ➜ JPG</strong>
     </a>
 
-    <!-- Merge PDF -->
     <a href="merge-pdf.html" class="tool-card">
-      <img src="https://img.icons8.com/color/48/combine-files.png" alt="Merge PDF Icon">
-      <div><strong>Merge PDF</strong></div>
+      <span class="emoji">📎</span>
+      <strong>Merge PDF</strong>
     </a>
   </div>
 
@@ -138,4 +134,9 @@
     }
 
     (function () {
-      const saved = localStorage.getItem("theme") || "li
+      const saved = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+  </script>
+</body>
+</html>
