@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Image Compressor</title>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --text: #111;
+      --card: #fff;
+      --accent: #007bff;
+    }
+
+    html[data-theme='dark'] {
+      --bg: #1e1e1e;
+      --text: #f5f5f5;
+      --card: #2b2b2b;
+      --accent: #4da6ff;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .box {
+      max-width: 500px;
+      margin: auto;
+      background: var(--card);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    input[type="file"],
+    input[type="number"] {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-weight: bold;
+      border-radius: 6px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    canvas {
+      display: none;
+    }
+
+    .toggle-btn {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .toggle-btn button {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🗜️ Image Compressor</h1>
+  <div class="box">
+    <input type="file" accept="image/*" id="imgInput">
+    <input type="number" id="targetSize" placeholder="Target Size in KB (e.g. 200)" />
+    <button onclick="compressImage()">Compress & Download</button>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <div class="toggle-btn">
+    <button onclick="toggleTheme()">🌓 Toggle Dark Mode</button>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute("data-theme");
+      const next = current === "light" ? "dark" : "light";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    }
+
+    (function () {
+      const saved = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+
+    async function compressImage() {
+      const file = document.getElementById("imgInput").files[0];
+      const targetKB = parseFloat(document.getElementById("targetSize").value);
+      if (!file || !targetKB) {
+        alert("Please upload image and enter target size.");
+        return;
+      }
+
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        let quality = 0.9;
+        let output = canvas.toDataURL("image/jpeg", quality);
+
+        const targetBytes = targetKB * 1024;
+
+        while (output.length > targetBytes && quality > 0.05) {
+          quality -= 0.05;
+          output = canvas.toDataURL("image/jpeg", quality);
+        }
+
+        const a = document.createElement("a");
+        a.href = output;
+        a.download = "compressed.jpg";
+        a.click();
+      };
+    }
+  </script>
+</body>
+</html>
