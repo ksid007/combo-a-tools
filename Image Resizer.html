@@ -1,12 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Image Resizer</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Image Resizer Tool</h1>
-  <p>Feature coming soon!</p>
-  <a href="index.html">← Back</a>
+  <h1>Image Resizer</h1>
+
+  <input type="file" id="upload" accept="image/*">
+  <br><br>
+  Width: <input type="number" id="width" placeholder="Width">
+  Height: <input type="number" id="height" placeholder="Height">
+  <br><br>
+  <button onclick="resizeImage()">Resize</button>
+  <br><br>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <a id="download" style="display:none;" download="resized-image.png">Download Resized Image</a>
+  <br><br>
+  <a href="Index.html">← Back</a>
+
+  <script>
+    function resizeImage() {
+      const file = document.getElementById("upload").files[0];
+      const width = parseInt(document.getElementById("width").value);
+      const height = parseInt(document.getElementById("height").value);
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const img = new Image();
+      img.onload = function () {
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        document.getElementById("download").href = canvas.toDataURL("image/png");
+        document.getElementById("download").style.display = "inline";
+        canvas.style.display = "block";
+      };
+      img.src = URL.createObjectURL(file);
+    }
+  </script>
 </body>
 </html>
