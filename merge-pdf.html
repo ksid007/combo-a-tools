@@ -23,7 +23,7 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
       text-align: center;
       width: 90%;
-      max-width: 450px;
+      max-width: 500px;
     }
     h1 {
       color: #333;
@@ -31,7 +31,18 @@
     }
     input[type="file"] {
       width: 100%;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
+    }
+    ul {
+      text-align: left;
+      font-size: 15px;
+      padding-left: 20px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      color: #444;
+    }
+    li {
+      margin: 4px 0;
     }
     button {
       background-color: #0077ff;
@@ -66,14 +77,30 @@
   <div class="container">
     <h1>🧾 Merge PDF Files</h1>
     <input type="file" id="pdfs" multiple accept="application/pdf" />
+    <ul id="fileList"></ul>
     <button onclick="mergePDFs()">Merge Now</button>
     <a id="downloadLink" download="merged.pdf">Download Merged PDF</a>
     <a href="index.html">← Back to Home</a>
   </div>
 
   <script>
+    const fileInput = document.getElementById("pdfs");
+    const fileList = document.getElementById("fileList");
+
+    fileInput.addEventListener("change", () => {
+      fileList.innerHTML = "";
+      const files = fileInput.files;
+      if (files.length > 0) {
+        for (let file of files) {
+          const li = document.createElement("li");
+          li.textContent = "📄 " + file.name;
+          fileList.appendChild(li);
+        }
+      }
+    });
+
     async function mergePDFs() {
-      const files = document.getElementById("pdfs").files;
+      const files = fileInput.files;
       if (files.length < 2) {
         alert("Please select at least 2 PDF files.");
         return;
