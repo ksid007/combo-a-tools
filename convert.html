@@ -41,7 +41,7 @@
     <h1>🖼️ JPG ⇌ PNG Batch Converter</h1>
 
     <div class="drop-zone" id="dropZone">
-      <strong>Drag & Drop</strong> images here (2 to 5 files)<br />or click to select
+      <strong>Drag & Drop</strong> images here (1 to 5 files)<br />or click to select
       <input type="file" id="fileInput" accept="image/jpeg, image/png" multiple style="display: none;" />
     </div>
 
@@ -89,8 +89,8 @@
       previewGrid.innerHTML = "";
       downloads.innerHTML = "";
 
-      if (files.length < 2 || files.length > 5) {
-        alert("Please select 2 to 5 images.");
+      if (files.length < 1 || files.length > 5) {
+        alert(" Thanks For Using ");
         return;
       }
 
@@ -127,10 +127,9 @@
 
     function convertImages() {
       const format = document.getElementById("format").value;
-      if (images.length < 2) {
-        alert("Upload at least 2 images.");
+      if (images.length < 1) 
         return;
-      }
+      
 
       downloads.innerHTML = "";
 
