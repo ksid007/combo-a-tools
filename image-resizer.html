@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Image Resizer</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <style>
     #preview {
       margin-top: 15px;
@@ -29,21 +29,16 @@
   <div class="container">
     <h1>📏 Image Resizer</h1>
     <input type="file" accept="image/*" id="upload" />
-    
     <div id="filename" style="margin-top: 10px; font-size: 14px; color: gray;"></div>
-    
     <img id="preview" style="display: none;" />
 
     <div class="input-group">
       <input type="number" id="width" placeholder="Width" />
       <input type="number" id="height" placeholder="Height" />
       <select id="unit">
-       <select id="unit">
-          <option value="px">Pixels (px)</option>
-          <option value="cm">Centimeters (cm)</option>
-          <option value="inch">Inches (in)</option> <!-- New -->
-</select>
-
+        <option value="px">Pixels (px)</option>
+        <option value="cm">Centimeters (cm)</option>
+        <option value="inch">Inches (in)</option>
       </select>
     </div>
 
@@ -59,6 +54,7 @@
     const filenameDisplay = document.getElementById("filename");
 
     let originalImage = null;
+    const dpi = 96;
 
     upload.addEventListener("change", (e) => {
       const file = e.target.files[0];
@@ -89,9 +85,10 @@
         alert("Please enter both width and height.");
         return;
       }
-        let scaleFactor = 1;
-        if (unit === "cm") scaleFactor = dpi / 2.54;
-        else if (unit === "inch") scaleFactor = dpi;
+
+      let scaleFactor = 1;
+      if (unit === "cm") scaleFactor = dpi / 2.54;
+      else if (unit === "inch") scaleFactor = dpi;
 
       const canvas = document.createElement("canvas");
       canvas.width = Math.round(width * scaleFactor);
@@ -108,7 +105,7 @@
       }, "image/png");
     }
 
-    // Dark Mode Script
+    // Dark Mode Toggle
     function toggleTheme() {
       const html = document.documentElement;
       const current = html.getAttribute("data-theme");
@@ -117,12 +114,10 @@
       localStorage.setItem("theme", next);
     }
 
-    // Load saved theme
     (function () {
       const saved = localStorage.getItem("theme") || "light";
       document.documentElement.setAttribute("data-theme", saved);
     })();
   </script>
-
 </body>
 </html>
