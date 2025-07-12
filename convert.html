@@ -1,122 +1,176 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <link rel="stylesheet" href="style.css">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>JPG ⇄ PNG Converter</title>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f6f8;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .container {
-      background: white;
-      padding: 30px 40px;
-      border-radius: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      width: 90%;
-      max-width: 450px;
-    }
-    h1 {
-      margin-bottom: 20px;
-      color: #333;
-    }
-    input[type="file"], input[type="number"] {
-      padding: 10px;
-      width: 100%;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-    }
-    button {
-      background-color: #0077ff;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      margin-top: 15px;
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Batch JPG ⇌ PNG Converter</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .drop-zone {
+      border: 2px dashed #999;
+      padding: 20px;
       border-radius: 12px;
-      font-size: 16px;
+      text-align: center;
       cursor: pointer;
-      width: 100%;
+      margin-bottom: 20px;
+      transition: all 0.3s;
     }
-    button:hover {
-      background-color: #005fd6;
+    .drop-zone.dragover {
+      background-color: rgba(0, 0, 0, 0.05);
     }
-    a {
-      margin-top: 15px;
-      display: block;
-      color: #0077ff;
-      font-size: 14px;
-      text-decoration: none;
+    .preview-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
     }
-    #downloadLink {
-      margin-top: 15px;
-      display: none;
+    .preview-item {
+      width: 100px;
+      text-align: center;
+      font-size: 12px;
     }
+    .preview-item img {
+      max-width: 100%;
+      max-height: 80px;
+      border-radius: 6px;
+    }
+  </style>
 </head>
 <body>
-
   <div class="container">
-    <h1>🖼️ JPG ⇄ PNG Converter</h1>
-  <div class="toggle" onclick="toggleTheme()">🌓 Toggle Dark Mode</div>
+    <h1>🖼️ JPG ⇌ PNG Batch Converter</h1>
 
-    <input type="file" id="fileInput" accept="image/png, image/jpeg"><br>
-    <button onclick="convertImage()">Convert</button><br>
-    <a id="downloadLink" download>Download Converted Image</a>
+    <div class="drop-zone" id="dropZone">
+      <strong>Drag & Drop</strong> images here (2 to 5 files)<br />or click to select
+      <input type="file" id="fileInput" accept="image/jpeg, image/png" multiple style="display: none;" />
+    </div>
+
+    <div class="preview-grid" id="previewGrid"></div>
+
+    <select id="format">
+      <option value="png">Convert to PNG</option>
+      <option value="jpeg">Convert to JPG</option>
+    </select>
+
+    <button onclick="convertImages()">Convert All</button>
+    <div id="downloads"></div>
     <a href="index.html">← Back to Home</a>
+    <div class="toggle" onclick="toggleTheme()">🌓 Toggle Dark Mode</div>
   </div>
 
-  <canvas id="canvas" style="display:none;"></canvas>
-
   <script>
-    function convertImage() {
-      const file = document.getElementById("fileInput").files[0];
-      if (!file) return alert("Please upload a file.");
+    const fileInput = document.getElementById("fileInput");
+    const dropZone = document.getElementById("dropZone");
+    const previewGrid = document.getElementById("previewGrid");
+    const downloads = document.getElementById("downloads");
 
-      const img = new Image();
-      const canvas = document.getElementById("canvas");
-      const ctx = canvas.getContext("2d");
+    let images = [];
 
-      img.onload = function() {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
+    dropZone.addEventListener("click", () => fileInput.click());
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("dragover");
+    });
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      handleFiles(e.dataTransfer.files);
+    });
 
-        const isPng = file.name.toLowerCase().endsWith('.png');
-        const format = isPng ? "image/jpeg" : "image/png";
-        const newExt = isPng ? "jpg" : "png";
+    fileInput.addEventListener("change", () => {
+      handleFiles(fileInput.files);
+    });
 
-        const dataURL = canvas.toDataURL(format);
-        const downloadLink = document.getElementById("downloadLink");
-        downloadLink.href = dataURL;
-        downloadLink.download = "converted." + newExt;
-        downloadLink.style.display = "inline";
-      };
-      img.src = URL.createObjectURL(file);
+    function handleFiles(files) {
+      images = [];
+      previewGrid.innerHTML = "";
+      downloads.innerHTML = "";
+
+      if (files.length < 2 || files.length > 5) {
+        alert("Please select 2 to 5 images.");
+        return;
+      }
+
+      [...files].forEach((file) => {
+        if (!file.type.startsWith("image/")) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = () => {
+            // Resize preview image to 100px width
+            const canvas = document.createElement("canvas");
+            const scale = 100 / img.width;
+            canvas.width = 100;
+            canvas.height = img.height * scale;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            const previewThumb = canvas.toDataURL("image/png");
+
+            images.push({ file, src: e.target.result, width: img.width, height: img.height });
+
+            const div = document.createElement("div");
+            div.className = "preview-item";
+            div.innerHTML = `<img src="${previewThumb}" alt="Preview" /><div>${file.name}</div>`;
+            previewGrid.appendChild(div);
+          };
+        };
+        reader.readAsDataURL(file);
+      });
     }
-    <script>
-  function toggleTheme() {
-    const html = document.documentElement;
-    const current = html.getAttribute("data-theme");
-    const next = current === "dark" ? "light" : "dark";
-    html.setAttribute("data-theme", next);
-    localStorage.setItem("theme", next);
-  }
 
-  (function () {
-    const saved = localStorage.getItem("theme") || "light";
-    document.documentElement.setAttribute("data-theme", saved);
-  })();
-</script>
+    function convertImages() {
+      const format = document.getElementById("format").value;
+      if (images.length < 2) {
+        alert("Upload at least 2 images.");
+        return;
+      }
 
+      downloads.innerHTML = "";
+
+      images.forEach(({ src, width, height, file }) => {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = file.name.split(".")[0] + `-converted.${format}`;
+            link.textContent = `📥 Download ${link.download}`;
+            link.style.display = "block";
+            link.style.margin = "5px 0";
+            downloads.appendChild(link);
+          }, `image/${format}`);
+        };
+      });
+    }
+
+    // Dark mode
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    }
+
+    (function () {
+      const saved = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
   </script>
 </body>
 </html>
