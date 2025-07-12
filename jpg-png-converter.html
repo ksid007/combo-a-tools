@@ -60,7 +60,7 @@
   <h1>🖼️ JPG ⇌ PNG Converter</h1>
 
   <div class="drop-zone" id="drop-zone">
-    Drag & drop JPG/PNG images here or click to upload (2–5 images)
+    Drag & drop JPG/PNG images here or click to upload (1–5 images)
     <input type="file" id="file-input" accept="image/png, image/jpeg" multiple hidden>
   </div>
 
@@ -97,14 +97,14 @@
         file.type === 'image/jpeg' || file.type === 'image/png'
       );
 
-      if (validFiles.length < 2 || validFiles.length > 5) {
-        alert("Please upload between 2 and 5 JPG or PNG images.");
+      if (validFiles.length < 1 || validFiles.length > 5) {
+        alert("Please upload between 1 and 5 JPG or PNG images.");
         return;
       }
 
       preview.innerHTML = '';
 
-      validFiles.forEach((file, index) => {
+      validFiles.forEach((file) => {
         const reader = new FileReader();
         reader.onload = function (e) {
           const img = document.createElement('img');
