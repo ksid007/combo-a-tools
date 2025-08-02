@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>Split PDF – ImagePDF Tools</title>
+  <meta name="description" content="Split a PDF into individual pages quickly and privately with ImagePDF Tools. Your files never leave your browser.">
+  <meta name="keywords" content="split pdf, pdf splitter, free pdf tools, privacy">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" integrity="sha512-kbGJHQ0mxg8Y27Ivof7g/0vPaL/3lOe+a+lA6PYqIUnP0R+2txbpgIjr3n6yhm1R+hrWV7wcvawqdWYGhD9f2w==" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>✂️ Split PDF</h1>
+    <input type="file" id="file-input" accept="application/pdf">
+    <div id="pages"></div>
+    <a class="toggle" onclick="toggleTheme()">Toggle Theme</a>
+  </div>
+  <script>
+  async function splitPdf(file) {
+    const uint8 = new Uint8Array(await file.arrayBuffer());
+    const srcPdf = await PDFLib.PDFDocument.load(uint8);
+    const pageCount = srcPdf.getPageCount();
+    const pagesDiv = document.getElementById('pages');
+    pagesDiv.innerHTML = '';
+    for (let i = 0; i < pageCount; i++) {
+      const newPdf = await PDFLib.PDFDocument.create();
+      const [page] = await newPdf.copyPages(srcPdf, [i]);
+      newPdf.addPage(page);
+      const data = await newPdf.save();
+      const blob = new Blob([data], {type:'application/pdf'});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `page-${i+1}.pdf`;
+      link.textContent = `Download Page ${i+1}`;
+      link.style.display = 'block';
+      pagesDiv.appendChild(link);
+    }
+  }
+  document.getElementById('file-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(file) { splitPdf(file); }
+  });
+  function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute("data-theme") || "light";
+      const next = current === "light" ? "dark" : "light";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+  }
+  (function(){
+      const saved = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", saved);
+  })();
+  </script>
+</body>
+</html>

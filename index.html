@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>ImagePDF Tools – Free PDF & Image Utilities</title>
+  <!-- SEO meta tags -->
+  <meta name="description" content="Use ImagePDF Tools to convert between JPG and PNG, resize and compress images, merge or split PDFs, convert images to PDF and more. 100% Free, private and browser‑based.">
+  <meta name="keywords" content="image tools, pdf tools, JPG to PNG, PNG to JPG, image resizer, image compressor, PDF to JPG, merge PDF, split PDF, image to PDF, free, privacy">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Open Graph for social sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ImagePDF Tools – Free PDF & Image Utilities">
+  <meta property="og:description" content="A suite of free, private tools for converting and editing your PDFs and images in the browser.">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Grid of tool cards on homepage */
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      padding: 0 10px;
+      justify-items: center;
+    }
+    .tool-card {
+      background: var(--card);
+      border: 1px solid #ddd;
+      padding: 20px 10px;
+      text-align: center;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 180px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s;
+      text-decoration: none;
+      color: inherit;
+      font-size: 16px;
+    }
+    .tool-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .tool-card .emoji {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 8px;
+    }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 14px;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧰 ImagePDF Tools</h1>
+  <div class="tool-grid">
+    <a href="jpg-png-converter.html" class="tool-card">
+      <span class="emoji" aria-hidden="true">🖼️</span>
+      JPG ⇌ PNG
+    </a>
+    <a href="image-resizer.html" class="tool-card">
+      <span class="emoji" aria-hidden="true">📐</span>
+      Resize Image
+    </a>
+    <a href="image-compressor.html" class="tool-card">
+      <span class="emoji" aria-hidden="true">🗜️</span>
+      Compress Image
+    </a>
+    <a href="pdf-to-jpg.html" class="tool-card">
+      <span class="emoji" aria-hidden="true">📄➡️🖼️</span>
+      PDF ➜ JPG
+    </a>
+    <a href="merge-pdf.html" class="tool-card">
+      <span class="emoji" aria-hidden="true">📎</span>
+      Merge PDF
+    </a>
+    <a href="pdf-splitter.html" class="tool-card">
+      <span class="emoji" aria-hidden="true">✂️</span>
+      Split PDF
+    </a>
+    <a href="image-to-pdf.html" class="tool-card">
+      <span class="emoji" aria-hidden="true">🖼️➡️📄</span>
+      Image ➜ PDF
+    </a>
+  </div>
+  <div class="toggle-btn">
+    <button onclick="toggleTheme()">🌓 Toggle Theme</button>
+  </div>
+  <footer>
+    <a href="about.html">About Us</a><br>
+    100% Free • No Data Collected • Built for Privacy 🛡️
+  </footer>
+  <script>
+    // Toggle between light and dark themes
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute("data-theme") || "light";
+      const next = current === "light" ? "dark" : "light";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    }
+    // Apply previously selected theme on load
+    (function () {
+      const saved = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+  </script>
+</body>
+</html>

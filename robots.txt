@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ksid007.github.io/combo-a-tools/sitemap.xml

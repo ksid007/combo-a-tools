@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>Image ➜ PDF – ImagePDF Tools</title>
+  <meta name="description" content="Convert one or multiple images into a single PDF file directly in your browser with ImagePDF Tools. No upload required.">
+  <meta name="keywords" content="image to pdf, convert images, jpg to pdf, png to pdf, free, privacy">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" integrity="sha512-kbGJHQ0mxg8Y27Ivof7g/0vPaL/3lOe+a+lA6PYqIUnP0R+2txbpgIjr3n6yhm1R+hrWV7wcvawqdWYGhD9f2w==" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>🖼️➡️📄 Image to PDF</h1>
+    <input type="file" id="images" accept="image/*" multiple>
+    <button id="convert-btn">Convert</button>
+    <a id="downloadLink"></a>
+    <a class="toggle" onclick="toggleTheme()">Toggle Theme</a>
+  </div>
+  <script>
+  async function imagesToPdf(files) {
+    const pdfDoc = await PDFLib.PDFDocument.create();
+    for (const file of files) {
+      const bytes = await file.arrayBuffer();
+      let img;
+      try {
+        img = await pdfDoc.embedJpg(bytes);
+      } catch (e) {
+        img = await pdfDoc.embedPng(bytes);
+      }
+      const page = pdfDoc.addPage([img.width, img.height]);
+      page.drawImage(img, {x: 0, y: 0, width: img.width, height: img.height});
+    }
+    const pdfBytes = await pdfDoc.save();
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const link = document.getElementById('downloadLink');
+    link.href = url;
+    link.download = 'images.pdf';
+    link.textContent = 'Download PDF';
+    link.style.display = 'block';
+  }
+  document.getElementById('convert-btn').addEventListener('click', async () => {
+    const files = document.getElementById('images').files;
+    if (files.length) {
+      await imagesToPdf(files);
+    }
+  });
+  function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute("data-theme") || "light";
+      const next = current === "light" ? "dark" : "light";
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+  }
+  (function(){
+      const saved = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", saved);
+  })();
+  </script>
+</body>
+</html>
