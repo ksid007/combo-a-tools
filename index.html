@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ImagePDF Tools — Fast, Private, No-Upload Utilities</title>
+  <meta name="description" content="Free image & PDF tools that run in your browser. Compress to target size, resize in px/cm/inch, convert JPG⇌PNG, split/merge PDFs, and more. No upload. No API." />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Crect width='256' height='256' rx='56' fill='%2308f'/%3E%3Ctext x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' font-size='140' font-family='Arial, Helvetica, sans-serif' fill='white'%3EIP%3C/text%3E%3C/svg%3E">
+  <link rel="preload" href="style.css" as="style">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="container row">
+      <a class="brand" href="./">
+        <span class="logo">IP</span>
+        <span class="brand-text">
+          <strong>ImagePDF Tools</strong>
+          <small>Fast • Private • No Upload</small>
+        </span>
+      </a>
+      <nav class="nav">
+        <a href="about.html">About</a>
+        <button id="themeToggle" class="toggle" title="Toggle theme" aria-label="Toggle theme">🌗</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container card">
+      <div class="hero-text">
+        <h1>All-in-one Image & PDF Tools</h1>
+        <p>Everything runs in your browser for speed & privacy. No server. No API. Perfect for students, designers, and everyday tasks.</p>
+        <div class="badges">
+          <span class="badge">No Upload</span>
+          <span class="badge">Mobile Friendly</span>
+          <span class="badge">Free & Fast</span>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+      </div>
+    </section>
+
+    <section class="container">
+      <h2 class="section-title">Popular Tools</h2>
+      <div class="grid tools">
+        <a class="tool card" href="image-compressor.html">
+          <div class="tool-icon">🗜️</div>
+          <div class="tool-meta">
+            <h3>Image Compressor (Target KB/MB)</h3>
+            <p>Set exact output size. Binary-search quality. Exports JPG/PNG.</p>
+          </div>
+          <span class="chip">No-Upload</span>
+        </a>
+
+        <a class="tool card" href="jpg-png-converter.html">
+          <div class="tool-icon">🔁</div>
+          <div class="tool-meta">
+            <h3>JPG ⇌ PNG Converter</h3>
+            <p>Batch convert with drag-and-drop & clean thumbnails.</p>
+          </div>
+          <span class="chip">Batch</span>
+        </a>
+
+        <a class="tool card" href="image-resizer.html">
+          <div class="tool-icon">📐</div>
+          <div class="tool-meta">
+            <h3>Image Resizer (px/cm/inch)</h3>
+            <p>Resize precisely with presets & aspect lock.</p>
+          </div>
+          <span class="chip">Pro</span>
+        </a>
+
+        <a class="tool card" href="pdf-to-jpg.html">
+          <div class="tool-icon">📄➡️🖼️</div>
+          <div class="tool-meta">
+            <h3>PDF → JPG (ZIP)</h3>
+            <p>Extract pages as images, multi-page ZIP download.</p>
+          </div>
+          <span class="chip">ZIP</span>
+        </a>
+
+        <a class="tool card" href="image-to-pdf.html">
+          <div class="tool-icon">🖼️➡️📄</div>
+          <div class="tool-meta">
+            <h3>Images → PDF</h3>
+            <p>Combine images to A4/Letter PDFs with margins.</p>
+          </div>
+          <span class="chip">Offline</span>
+        </a>
+
+        <a class="tool card" href="pdf-splitter.html">
+          <div class="tool-icon">✂️</div>
+          <div class="tool-meta">
+            <h3>PDF Splitter</h3>
+            <p>Quickly split pages into separate files.</p>
+          </div>
+          <span class="chip">Local</span>
+        </a>
+
+        <a class="tool card" href="merge-pdf.html">
+          <div class="tool-icon">➕</div>
+          <div class="tool-meta">
+            <h3>Merge PDF</h3>
+            <p>Combine multiple PDFs into one. (No upload)</p>
+          </div>
+          <span class="chip">Offline</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="container card cta">
+      <div class="cta-row">
+        <div class="cta-text">
+          <h2>Privacy-first by design</h2>
+          <p>Your files never leave your device. Everything is computed locally using modern web APIs.</p>
+        </div>
+        <a class="btn" href="about.html">Learn more</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container row">
+      <small>© <span id="year"></span> ImagePDF Tools. All rights reserved.</small>
+      <a class="muted" href="sitemap.xml">Sitemap</a>
+    </div>
+  </footer>
+
+<script>
+  // Theme toggle with persistence
+  const root = document.documentElement;
+  const saved = localStorage.getItem('theme');
+  if (saved === 'light') root.classList.add('light');
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    root.classList.toggle('light');
+    localStorage.setItem('theme', root.classList.contains('light') ? 'light' : 'dark');
+  });
+
+  // Year
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
